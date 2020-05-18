@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/src/main/java/syntax/Syntax.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/window/IndentListener.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/window/MainFrame.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/window/SyntaxHighlighter.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/window/UndoWrapper.java" charset="GBK" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>

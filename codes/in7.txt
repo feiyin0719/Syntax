@@ -1,0 +1,13 @@
+main()
+{
+    int x=1,y=0;
+    float fx=1.0,fy=2.0;
+    if x==1
+    {
+        fx=(fy+y)*(fx+x)/3;
+     
+     }
+     
+     
+     y=1;
+ }
