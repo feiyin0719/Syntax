@@ -1,6 +1,5 @@
 package syntax;
 
-class N
-{
-	int nextlist;
+class N {
+    int nextlist;
 }

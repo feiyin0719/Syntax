@@ -1,7 +1,6 @@
 package syntax;
 
-class E
-{
-	int truelist;
-	int falselist;
+class E {
+    int truelist;
+    int falselist;
 }

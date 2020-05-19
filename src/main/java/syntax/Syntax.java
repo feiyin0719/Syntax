@@ -1,601 +1,549 @@
 package syntax;
 
 
-
+import word.ParseElement;
+import word.Word;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import word.ParseElement;
-import word.Word;
 public class Syntax implements AddQuadListener {
-	public int currentTokenNumber=0;
-	public int  quadNum =0;
-	int row=1;
-	private int index = 0;
-	Word word;
-	ArrayList<ParseElement> rs ;
-	String str = "";
+    public int currentTokenNumber = 0;
+    public int quadNum = 0;
+    public FourUnitList quadList;
+    public boolean fail = false;
+    public ArrayList<String> errorList;
+    int row = 1;
+    Word word;
+    ArrayList<ParseElement> rs;
+    String str = "";
+    int firstIndex;
+    private int index = 0;
     private String vartype;
+    private Map<String, Integer> opPriMap;
 
-	public FourUnitList quadList;
-	int firstIndex;
-	private Map<String,Integer> opPriMap;
-	public boolean fail=false;
-	public ArrayList<String> errorList;
-	public Syntax() throws Exception
-	{   
-		this("in.txt");
-		
-		
-	}
-	public Syntax(String filename) throws Exception
-	{   
-		quadList=new FourUnitList(this);
-		word = new Word(filename);
-		errorList=new ArrayList<String>();
-	    opPriMap =new HashMap<String, Integer>();
-	    opPriMap.put("+", 1);
-	    opPriMap.put("-", 1);
+    public Syntax() throws Exception {
+        this("in.txt");
+
+
+    }
+
+    public Syntax(String filename) throws Exception {
+        quadList = new FourUnitList(this);
+        word = new Word(filename);
+        errorList = new ArrayList<String>();
+        opPriMap = new HashMap<String, Integer>();
+        opPriMap.put("+", 1);
+        opPriMap.put("-", 1);
         opPriMap.put("*", 2);
-	    opPriMap.put("/", 2);
-		opPriMap.put("(", 0);
-		opPriMap.put(")", 0);
-		
-	}
-	public ArrayList<ParseElement> getWordList(){
-		return this.rs;
-	}
-	public void WordAnalysis() throws Exception
-	{
-		currentTokenNumber=0;
-		quadNum = 100;
-		row=1;
-		index = 0;
-		firstIndex=0;	
-		rs = new ArrayList<ParseElement>(); 
-		rs = word.WordParse();
-		word.TestArray();
-		
-		currentTokenNumber = word.currentToken;
-	}
-	
-	public int nextQuad()
-	{
-		return quadNum+1;
-	}
-	
-	public void P()
-	{
-		//System.out.println(rs);
-		if(rs.get(index).getValue().equalsIgnoreCase("main"))
-		{
-			
-			//System.out.println(rs.get(index).getValue());
-			this.PB();
-		}
-		else {
-		System.out.println("³ÌĞò±ØĞëÒÔmain¹Ø¼ü×Ö¿ªÊ¼");
-		errorList.add("³ÌĞò±ØĞëÒÔmain¹Ø¼ü×Ö¿ªÊ¼");
-		fail=true;
-		}
-		
-	}
-	
-	//¶Î
-	Attribute Y()//S
-	{
-		//System.out.println("½øÈëY");
-		Attribute S = new Attribute();
-		if(rs.get(index).getType().equalsIgnoreCase("variable"))
-		{
-			//System.out.println("¸³ÖµÓï¾ä");
-		
-			S = this.F();
-	
-		}
-		else if(rs.get(index).getValue().equalsIgnoreCase("while"))
-		{
-		
-			S=this.X();
-			if(index>=rs.size())
-				{System.out.println("È±ÉÙ}");
-				
-				fail=true;
-				errorList.add("È±ÉÙ}");
-				}
-			else
-			this.K();
-			
-			//System.out.println("Ñ­»·Óï¾ä");
-		}
-		else if(rs.get(index).getValue().equalsIgnoreCase("if"))
-		{
-	
-			S=this.If();
-			if(index>=rs.size())
-			{System.out.println("È±ÉÙ}");
-			
-			fail=true;
-			errorList.add("È±ÉÙ}");
-			}
-			else
-			this.K();
-			//System.out.println("Ìõ¼şÓï¾ä");
-		}
-		
-		
-		else if(rs.get(index).getValue().equalsIgnoreCase("{"))
-		{
-	
-			
-			index++;
-		    S=this.K();
-			if(rs.get(index).getValue().equalsIgnoreCase("}"))
-			{
-			
-				index++;
-			
-			}
+        opPriMap.put("/", 2);
+        opPriMap.put("(", 0);
+        opPriMap.put(")", 0);
 
-			else{System.out.println("È±ÉÙ}");
-			
-			fail=true;
-			errorList.add("È±ÉÙ}");
-			}
-		}
-		else if(rs.get(index).getType().equalsIgnoreCase("varType")){
-		
-			
-			this.VARType();
-		
-		
-	}
-		return S;
-		
-	}
-	void PB()
-	{
-	     index++;
-		if(rs.get(index) != null&&rs.get(index).getValue().equalsIgnoreCase("("))//³ÌĞòÃû
-		{
-			index++;
-			if(rs.get(index).getValue().equalsIgnoreCase(")"))
-			{
-				//System.out.println(rs.get(index).getValue());
-			
-			
-				index++;
-				if(rs.get(index).getValue().equalsIgnoreCase("{"))
-				{
-					
-					this.Y();
-					
-					
-				}
-				else{System.out.println("È±ÉÙ}");
-				
-				fail=true;
-				errorList.add("È±ÉÙ}");
-				}
-		
+    }
 
-				
-			}
-			else{System.out.println("È±ÉÙ(");
-			
-			fail=true;
-			errorList.add("È±ÉÙ(");
-			}
-		}
-		else {System.out.println("È±ÉÙ(");
-		
-		fail=true;
-		errorList.add("È±ÉÙ(");
-		}
-	}
-	//Óï¾ä
-	Attribute Sentence(){
-		Attribute s=new Attribute();
-		if(rs.get(index).getType().equalsIgnoreCase("varType")){
-			
-			
-			this.VARType();
-		
-		
-	}else if(rs.get(index).getValue().equalsIgnoreCase("if")){
-		
-		s=this.If();
-		
-	}else if(rs.get(index).getType().equalsIgnoreCase("variable"))
-	{
-		//System.out.println("¸³ÖµÓï¾ä");
-		
-		s = this.F();
+    public static void main(String[] args) throws Exception {
+        Syntax s = new Syntax();
+        s.WordAnalysis();
+        //	s.word.TestArray();
+        s.P();
+        s.quadList.print();
+    }
 
-	}
-		return s;
-		
-	}
-	Attribute If(){
-		M M1=new M();
-		M M2=new M();
-		N N1=new N();
-		boolean iselse=false;
-		Attribute S1 = new Attribute();
-		Attribute S2 = new Attribute();
-		Attribute S = new Attribute();
-		Attribute E=new Attribute();
-		if(rs.get(index).getValue().equalsIgnoreCase("if"))
-		{  
-		   index++;
-		  // if(rs.get(index).getValue().equalsIgnoreCase("("))
-		   {
-			//   index++;
-			E=this.J();
-			//if(rs.get(index).getValue().equalsIgnoreCase(")"))
-			{
-			
-			   
-				    M1.quad = quadNum;
-		          
-					S1=this.Y();
-				  
-					
-				
-				if(rs.get(index).getValue().equalsIgnoreCase("else"))
-				{  
-					iselse=true;
-					N1.nextlist = quadNum;
-					quadList.gen(quadNum, "J", "0", "0", 'Y',0,null);//(  j  , ¡ª , ¡ª , 0 )  
-					M2.quad = quadNum;
-				 
-					index++;
-				    S2=this.Y();
-				    quadList.backPatch(N1.nextlist, quadNum
-				    		);
-					quadList.backPatch(E.trueList, M1.quad );
-					quadList.backPatch(E.falseList, M2.quad );
-					S.nextList=quadList.merge(S1.nextList, N1.nextlist, S2.nextList);
-				}
-				
-				{
-		
-					
-					if(iselse)
-					{str+="if elseÓï¾ä£¬Ç¶Ì×£º"+str;
-					
-					}
-					else {
-						quadList.backPatch(E.trueList, M1.quad );
-						quadList.backPatch(E.falseList, quadNum);
-						S.nextList=quadList.merge(E.falseList,S1.nextList);
-					}
-				}
-				
-			}
-		}
-		   
-		
-		
-		}
+    public ArrayList<ParseElement> getWordList() {
+        return this.rs;
+    }
 
-		return S;
-		
-		
-		
-	}
-	
-	//ÉùÃ÷Óï¾ä
-	void VARType(){
-		vartype=rs.get(index).getValue();
-		index++;
-		if(!rs.get(index).getType().equalsIgnoreCase("variable")){
-			System.out.println("Óï·¨´íÎó,±äÁ¿ÀàĞÍºóÈ±ÉÙ±êÊ¶·û");
-			fail=true;
-			errorList.add("Óï·¨´íÎó,±äÁ¿ÀàĞÍºóÈ±ÉÙ±êÊ¶·û");
-			
-		}
-		try{
-		
-			var();
-			
-			
-		
-		}catch(Exception e){
-			System.out.println("È±ÉÙ';'");
-			fail=true;
-			errorList.add("È±ÉÙ';'");
-		}
-		
-		
-	}
-	
-	void var(){
-		String valuable;
-		
-		if(rs.get(index).getType().equalsIgnoreCase("variable")){
-			valuable=rs.get(index).getValue();
-			//quadList.gen(quadNum,"new",vartype,null,'N',-1,valuable);
-			index++;
-			if(rs.get(index).getValue().equalsIgnoreCase(",")){}
-			else if(rs.get(index).getValue().equalsIgnoreCase("=")){
-				
-				index++;
-				if(rs.get(index).getType().equalsIgnoreCase("num")||rs.get(index).getType().equalsIgnoreCase("variable"))
-				{Attribute B=this.B();
-				if(B.firstIndex==0)
-					quadList.gen(quadNum,"=",B.PLACE,null,'N',-1,valuable);
-				else
-					quadList.gen(quadNum,"=",B.PLACE,null,'N',-1,valuable);
-				
-				
-				}
-		
-				
-			
-				else{  
-					System.out.println("Óï·¨´íÎó,±äÁ¿³õÊ¼»¯´íÎó");
-				fail=true;
-				errorList.add("Óï·¨´íÎó,±äÁ¿³õÊ¼»¯´íÎó");
-				}
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase(";"))
-				{}
-			else
-				{System.out.println("Óï·¨´íÎó,±êÊ¶·ûºóÃæÖ»ÄÜÎª','»ò'='");
-				fail=true;
-				errorList.add("Óï·¨´íÎó,±êÊ¶·ûºóÃæÖ»ÄÜÎª','»ò'='");
-				}
-		}
-		else
-			{System.out.println("Óï·¨´íÎó,±äÁ¿ÀàĞÍºóÈ±ÉÙ±êÊ¶·û");
-			fail=true;
-			errorList.add("Óï·¨´íÎó,±äÁ¿ÀàĞÍºóÈ±ÉÙ±êÊ¶·û");}
-		vara();
-		
-	}
-	void vara(){
-		if(rs.get(index).getValue().equalsIgnoreCase(","))
-			{
-			index++;
-			var();
-			}
-		else if(rs.get(index).getValue().equalsIgnoreCase(";")){
-			
-			
-			
-		}
-		else{
-			System.out.println("Óï·¨´íÎó,±êÊ¶·ûºóÃæÖ»ÄÜÎª','»ò'='»ò';'");
-		}
-		
-		
-		
-		
-	}
-	
-	
-	//¸³ÖµÓï¾ä
-	Attribute F()
-	{
-		String valuable;
-		Attribute F1= new Attribute();
-		Attribute B= new Attribute();
-		if(rs.get(index).getType().equalsIgnoreCase("variable"))
-		{
-			valuable=rs.get(index).getValue();
-			index++;
-			if(rs.get(index).getValue().equalsIgnoreCase("="))
-			{
-				
-				index++;
-				B=this.B();
-				if(B.firstIndex==0)
-					quadList.gen(quadNum,"=",B.PLACE,null,'N',-1,valuable);
-				else
-					quadList.gen(quadNum,"=",B.PLACE,null,'N',-1,valuable);
+    public void WordAnalysis() throws Exception {
+        currentTokenNumber = 0;
+        quadNum = 100;
+        row = 1;
+        index = 0;
+        firstIndex = 0;
+        rs = new ArrayList<ParseElement>();
+        rs = word.WordParse();
+        word.TestArray();
 
-				
-			}
-			else System.out.println("Óï·¨´íÎó£º È±ÉÙ±í´ïÊ½ÓÒ±ß²¿·Ö");
-		}
-		else System.out.println("Óï·¨´íÎó£º ¸³ÖµÓï¾ä×ó²¿±ØĞëÎª±äÁ¿");
-		F1.nextList = 0;
-		return F1;
-	}
-	//±í´ïÊ½
-	Attribute B()
-	{
-		Attribute B1 = new Attribute();
-		ArrayList<String> opstack=new ArrayList<String>();
-		ArrayList<String> numstack=new ArrayList<String>();
-		firstIndex=0;
-		ParseElement pe;
-		pe=rs.get(index);
-		index++;
-		String op,num1,num2;
-		while(isBiaoOP(pe))
-		{
-			if(pe.getType().equalsIgnoreCase("num")||pe.getType().equalsIgnoreCase("variable"))
-			numstack.add(pe.getValue());
-			else{
-				if(opstack.size()<=0)
-					opstack.add(pe.getValue());
-				else{
-					if(opPriMap.get(opstack.get(opstack.size()-1))<= opPriMap.get(pe.getValue())||pe.getValue().equalsIgnoreCase("("))
-						opstack.add(pe.getValue());
-					else{
-						
-						if(pe.getValue().equalsIgnoreCase(")"))
-						{
-							op=opstack.remove(opstack.size()-1);
-							while(!op.equals("("))
-							{
-								num1=numstack.remove(numstack.size()-1);
-								num2=numstack.remove(numstack.size()-1);
-								quadList.gen(quadNum, op, num2, num1, 'N',-1, "T"+firstIndex);
-								numstack.add("T"+firstIndex);
-								firstIndex++;
-								try{
-									op=opstack.remove(opstack.size()-1);	
-									}catch(Exception e){
-										
-										break;
-									}
-									
-							}
-							
-							
-						}
-						else{
-							op=opstack.remove(opstack.size()-1);
-							while(opPriMap.get(op)> opPriMap.get(pe.getValue())){
-								num1=numstack.remove(numstack.size()-1);
-								num2=numstack.remove(numstack.size()-1);
-								quadList.gen(quadNum, op, num2, num1, 'N',-1, "T"+firstIndex);
-								numstack.add("T"+firstIndex);
-								firstIndex++;
-								try{
-								op=opstack.remove(opstack.size()-1);	
-								}catch(Exception e){
-									
-									break;
-								}
-								
-								
-							}
-							
-							numstack.add(pe.getValue());
-							
-							
-						}
-						
-					}
-					
-					
-					
-				}
-				
-				
-				
-			}
-			
-			pe=rs.get(index);
-			index++;
-			
-			}
-		while(opstack.size()>0){
-			op=opstack.remove(opstack.size()-1);
-			num1=numstack.remove(numstack.size()-1);
-			num2=numstack.remove(numstack.size()-1);
-			quadList.gen(quadNum, op, num2, num1, 'N',-1, "T"+firstIndex);
-			numstack.add("T"+firstIndex);
-			firstIndex++;
-			
-			}
-		index--;
-		B1.firstIndex=firstIndex;
-		B1.PLACE=numstack.remove(numstack.size()-1);
-            return B1;
-	}
-	//whileÓï¾ä
-	Attribute X()
-	{
-		Attribute X=new Attribute();
-		Attribute E=new Attribute();
-		Attribute S=new Attribute();
-		M M1= new M();
-		M M2= new M();
-		if(rs.get(index).getValue().equalsIgnoreCase("while"))
-		{
-			index++;
-			//if(rs.get(index).getValue().equalsIgnoreCase("("))
-			{
-				//index++;
-			M1.quad=quadNum;
-			E=this.J();
-			
-			//if(rs.get(index).getValue().equalsIgnoreCase(")"))
-			{
-				M2.quad=quadNum;
-				S=this.Y();
-			    quadList.backPatch(S.nextList, M1.quad );
-				quadList.gen(quadNum, "J", "0", "0", 'Y',M1.quad,null);
-				quadList.backPatch(E.falseList, quadNum);
-				quadList.backPatch(E.trueList, M2.quad );
-			    
-				X.nextList= E.falseList;
-			}
-			//this.K();
-		}
-			}
-		//this.Y();
-		return X;
-	}
-	//²¼¶ûÓï¾ä
-	Attribute J()
-	{
-		Attribute E1 = new Attribute();
-		Attribute E2 = new Attribute();
-		Attribute J1 = new Attribute();
-		M M1=new M();
-		
-		E1=E();
-		
-		if(rs.get(index).getValue().equalsIgnoreCase("&&"))
-		{
-			index++;
-			M1.quad=quadNum;
-			E2=E();
-			quadList.backPatch(E1.trueList, M1.quad );
-			J1.trueList =E2.trueList;
-			//System.out.println(E1.trueList+"  "+ E2.trueList);
-			//quadList.print();
-			J1.falseList =quadList.merge(E1.falseList,E2.falseList);
-		}
-		else if(rs.get(index).getValue().equalsIgnoreCase("||"))//or
-		{
-			index++;
-			M1.quad=quadNum;
-			E2=E();
-			quadList.backPatch(E1.falseList, M1.quad );
-			J1.falseList =E2.falseList;
-			J1.trueList =quadList.merge(E1.trueList,E2.trueList);
-		}
-		
-		else
-		{
-			J1.trueList =E1.trueList;
-			J1.falseList = E1.falseList;
-		}
-		while(rs.get(index).getValue().equalsIgnoreCase("&&")||rs.get(index).getValue().equalsIgnoreCase("||"))
-		{
-			if(rs.get(index).getValue().equalsIgnoreCase("&&"))
-			{
-				index++;
-				M1.quad=quadNum;
-				E1=J1;
-				E2=E();
-				quadList.backPatch(E1.trueList, M1.quad );
-				J1.trueList =E2.trueList;
-				//System.out.println(E1.trueList+"  "+ E2.trueList);
-				//quadList.print();
-				J1.falseList =quadList.merge(E1.falseList,E2.falseList);
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase("||"))//or
-			{
-				index++;
-				M1.quad=quadNum;
-				E1=J1;
-				E2=E();
-				quadList.backPatch(E1.falseList, M1.quad );
-				J1.falseList =E2.falseList;
-				J1.trueList =quadList.merge(E1.trueList,E2.trueList);
-			}
-			
-		}
+        currentTokenNumber = Word.currentToken;
+    }
+
+    public int nextQuad() {
+        return quadNum + 1;
+    }
+
+    public void P() {
+        //System.out.println(rs);
+        if (rs.get(index).getValue().equalsIgnoreCase("main")) {
+
+            //System.out.println(rs.get(index).getValue());
+            this.PB();
+        } else {
+            System.out.println("ç¨‹åºå¿…é¡»ä»¥mainå…³é”®å­—å¼€å§‹");
+            errorList.add("ç¨‹åºå¿…é¡»ä»¥mainå…³é”®å­—å¼€å§‹");
+            fail = true;
+        }
+
+    }
+
+    //æ®µ
+    Attribute Y()//S
+    {
+        //System.out.println("è¿›å…¥Y");
+        Attribute S = new Attribute();
+        if (rs.get(index).getType().equalsIgnoreCase("variable")) {
+            //System.out.println("èµ‹å€¼è¯­å¥");
+
+            S = this.F();
+
+        } else if (rs.get(index).getValue().equalsIgnoreCase("while")) {
+
+            S = this.X();
+            if (index >= rs.size()) {
+                System.out.println("ç¼ºå°‘}");
+
+                fail = true;
+                errorList.add("ç¼ºå°‘}");
+            } else
+                this.K();
+
+            //System.out.println("å¾ªç¯è¯­å¥");
+        } else if (rs.get(index).getValue().equalsIgnoreCase("if")) {
+
+            S = this.If();
+            if (index >= rs.size()) {
+                System.out.println("ç¼ºå°‘}");
+
+                fail = true;
+                errorList.add("ç¼ºå°‘}");
+            } else
+                this.K();
+            //System.out.println("æ¡ä»¶è¯­å¥");
+        } else if (rs.get(index).getValue().equalsIgnoreCase("{")) {
+
+
+            index++;
+            S = this.K();
+            if (rs.get(index).getValue().equalsIgnoreCase("}")) {
+
+                index++;
+
+            } else {
+                System.out.println("ç¼ºå°‘}");
+
+                fail = true;
+                errorList.add("ç¼ºå°‘}");
+            }
+        } else if (rs.get(index).getType().equalsIgnoreCase("varType")) {
+
+
+            this.VARType();
+
+
+        }
+        return S;
+
+    }
+
+    void PB() {
+        index++;
+        if (rs.get(index) != null && rs.get(index).getValue().equalsIgnoreCase("("))//ç¨‹åºå
+        {
+            index++;
+            if (rs.get(index).getValue().equalsIgnoreCase(")")) {
+                //System.out.println(rs.get(index).getValue());
+
+
+                index++;
+                if (rs.get(index).getValue().equalsIgnoreCase("{")) {
+
+                    this.Y();
+
+
+                } else {
+                    System.out.println("ç¼ºå°‘}");
+
+                    fail = true;
+                    errorList.add("ç¼ºå°‘}");
+                }
+
+
+            } else {
+                System.out.println("ç¼ºå°‘(");
+
+                fail = true;
+                errorList.add("ç¼ºå°‘(");
+            }
+        } else {
+            System.out.println("ç¼ºå°‘(");
+
+            fail = true;
+            errorList.add("ç¼ºå°‘(");
+        }
+    }
+
+    //è¯­å¥
+    Attribute Sentence() {
+        Attribute s = new Attribute();
+        if (rs.get(index).getType().equalsIgnoreCase("varType")) {
+
+
+            this.VARType();
+
+
+        } else if (rs.get(index).getValue().equalsIgnoreCase("if")) {
+
+            s = this.If();
+
+        } else if (rs.get(index).getType().equalsIgnoreCase("variable")) {
+            //System.out.println("èµ‹å€¼è¯­å¥");
+
+            s = this.F();
+
+        }
+        return s;
+
+    }
+
+    Attribute If() {
+        M M1 = new M();
+        M M2 = new M();
+        N N1 = new N();
+        boolean iselse = false;
+        Attribute S1 = new Attribute();
+        Attribute S2 = new Attribute();
+        Attribute S = new Attribute();
+        Attribute E = new Attribute();
+        if (rs.get(index).getValue().equalsIgnoreCase("if")) {
+            index++;
+            // if(rs.get(index).getValue().equalsIgnoreCase("("))
+            {
+                //   index++;
+                E = this.J();
+                //if(rs.get(index).getValue().equalsIgnoreCase(")"))
+                {
+
+
+                    M1.quad = quadNum;
+
+                    S1 = this.Y();
+
+
+                    if (rs.get(index).getValue().equalsIgnoreCase("else")) {
+                        iselse = true;
+                        N1.nextlist = quadNum;
+                        quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);//(  j  , â€” , â€” , 0 )
+                        M2.quad = quadNum;
+
+                        index++;
+                        S2 = this.Y();
+                        quadList.backPatch(N1.nextlist, quadNum
+                        );
+                        quadList.backPatch(E.trueList, M1.quad);
+                        quadList.backPatch(E.falseList, M2.quad);
+                        S.nextList = quadList.merge(S1.nextList, N1.nextlist, S2.nextList);
+                    }
+
+                    {
+
+
+                        if (iselse) {
+                            str += "if elseè¯­å¥ï¼ŒåµŒå¥—ï¼š" + str;
+
+                        } else {
+                            quadList.backPatch(E.trueList, M1.quad);
+                            quadList.backPatch(E.falseList, quadNum);
+                            S.nextList = quadList.merge(E.falseList, S1.nextList);
+                        }
+                    }
+
+                }
+            }
+
+
+        }
+
+        return S;
+
+
+    }
+
+    //å£°æ˜è¯­å¥
+    void VARType() {
+        vartype = rs.get(index).getValue();
+        index++;
+        if (!rs.get(index).getType().equalsIgnoreCase("variable")) {
+            System.out.println("è¯­æ³•é”™è¯¯,å˜é‡ç±»å‹åç¼ºå°‘æ ‡è¯†ç¬¦");
+            fail = true;
+            errorList.add("è¯­æ³•é”™è¯¯,å˜é‡ç±»å‹åç¼ºå°‘æ ‡è¯†ç¬¦");
+
+        }
+        try {
+
+            var();
+
+
+        } catch (Exception e) {
+            System.out.println("ç¼ºå°‘';'");
+            fail = true;
+            errorList.add("ç¼ºå°‘';'");
+        }
+
+
+    }
+
+    void var() {
+        String valuable;
+
+        if (rs.get(index).getType().equalsIgnoreCase("variable")) {
+            valuable = rs.get(index).getValue();
+            //quadList.gen(quadNum,"new",vartype,null,'N',-1,valuable);
+            index++;
+            if (rs.get(index).getValue().equalsIgnoreCase(",")) {
+            } else if (rs.get(index).getValue().equalsIgnoreCase("=")) {
+
+                index++;
+                if (rs.get(index).getType().equalsIgnoreCase("num") || rs.get(index).getType().equalsIgnoreCase("variable")) {
+                    Attribute B = this.B();
+                    if (B.firstIndex == 0)
+                        quadList.gen(quadNum, "=", B.PLACE, null, 'N', -1, valuable);
+                    else
+                        quadList.gen(quadNum, "=", B.PLACE, null, 'N', -1, valuable);
+
+
+                } else {
+                    System.out.println("è¯­æ³•é”™è¯¯,å˜é‡åˆå§‹åŒ–é”™è¯¯");
+                    fail = true;
+                    errorList.add("è¯­æ³•é”™è¯¯,å˜é‡åˆå§‹åŒ–é”™è¯¯");
+                }
+            } else if (rs.get(index).getValue().equalsIgnoreCase(";")) {
+            } else {
+                System.out.println("è¯­æ³•é”™è¯¯,æ ‡è¯†ç¬¦åé¢åªèƒ½ä¸º','æˆ–'='");
+                fail = true;
+                errorList.add("è¯­æ³•é”™è¯¯,æ ‡è¯†ç¬¦åé¢åªèƒ½ä¸º','æˆ–'='");
+            }
+        } else {
+            System.out.println("è¯­æ³•é”™è¯¯,å˜é‡ç±»å‹åç¼ºå°‘æ ‡è¯†ç¬¦");
+            fail = true;
+            errorList.add("è¯­æ³•é”™è¯¯,å˜é‡ç±»å‹åç¼ºå°‘æ ‡è¯†ç¬¦");
+        }
+        vara();
+
+    }
+
+    void vara() {
+        if (rs.get(index).getValue().equalsIgnoreCase(",")) {
+            index++;
+            var();
+        } else if (rs.get(index).getValue().equalsIgnoreCase(";")) {
+
+
+        } else {
+            System.out.println("è¯­æ³•é”™è¯¯,æ ‡è¯†ç¬¦åé¢åªèƒ½ä¸º','æˆ–'='æˆ–';'");
+        }
+
+
+    }
+
+    //èµ‹å€¼è¯­å¥
+    Attribute F() {
+        String valuable;
+        Attribute F1 = new Attribute();
+        Attribute B = new Attribute();
+        if (rs.get(index).getType().equalsIgnoreCase("variable")) {
+            valuable = rs.get(index).getValue();
+            index++;
+            if (rs.get(index).getValue().equalsIgnoreCase("=")) {
+
+                index++;
+                B = this.B();
+                if (B.firstIndex == 0)
+                    quadList.gen(quadNum, "=", B.PLACE, null, 'N', -1, valuable);
+                else
+                    quadList.gen(quadNum, "=", B.PLACE, null, 'N', -1, valuable);
+
+
+            } else System.out.println("è¯­æ³•é”™è¯¯ï¼š ç¼ºå°‘è¡¨è¾¾å¼å³è¾¹éƒ¨åˆ†");
+        } else System.out.println("è¯­æ³•é”™è¯¯ï¼š èµ‹å€¼è¯­å¥å·¦éƒ¨å¿…é¡»ä¸ºå˜é‡");
+        F1.nextList = 0;
+        return F1;
+    }
+
+    //è¡¨è¾¾å¼
+    Attribute B() {
+        Attribute B1 = new Attribute();
+        ArrayList<String> opstack = new ArrayList<String>();
+        ArrayList<String> numstack = new ArrayList<String>();
+        firstIndex = 0;
+        ParseElement pe;
+        pe = rs.get(index);
+        index++;
+        String op, num1, num2;
+        while (isOpOrNum(pe)) {
+            if (pe.getType().equalsIgnoreCase("num") || pe.getType().equalsIgnoreCase("variable"))
+                numstack.add(pe.getValue());
+            else {
+                if (opstack.size() <= 0)
+                    opstack.add(pe.getValue());
+                else {
+                    if (opPriMap.get(opstack.get(opstack.size() - 1)) <= opPriMap.get(pe.getValue()) || pe.getValue().equalsIgnoreCase("("))
+                        opstack.add(pe.getValue());
+                    else {
+
+                        if (pe.getValue().equalsIgnoreCase(")")) {
+                            op = opstack.remove(opstack.size() - 1);
+                            while (!op.equals("(")) {
+                                num1 = numstack.remove(numstack.size() - 1);
+                                num2 = numstack.remove(numstack.size() - 1);
+                                quadList.gen(quadNum, op, num2, num1, 'N', -1, "T" + firstIndex);
+                                numstack.add("T" + firstIndex);
+                                firstIndex++;
+                                try {
+                                    op = opstack.remove(opstack.size() - 1);
+                                } catch (Exception e) {
+
+                                    break;
+                                }
+
+                            }
+
+
+                        } else {
+                            op = opstack.remove(opstack.size() - 1);
+                            while (opPriMap.get(op) > opPriMap.get(pe.getValue())) {
+                                num1 = numstack.remove(numstack.size() - 1);
+                                num2 = numstack.remove(numstack.size() - 1);
+                                quadList.gen(quadNum, op, num2, num1, 'N', -1, "T" + firstIndex);
+                                numstack.add("T" + firstIndex);
+                                firstIndex++;
+                                try {
+                                    op = opstack.remove(opstack.size() - 1);
+                                } catch (Exception e) {
+
+                                    break;
+                                }
+
+
+                            }
+
+                            numstack.add(pe.getValue());
+
+
+                        }
+
+                    }
+
+
+                }
+
+
+            }
+
+            pe = rs.get(index);
+            index++;
+
+        }
+        while (opstack.size() > 0) {
+            op = opstack.remove(opstack.size() - 1);
+            num1 = numstack.remove(numstack.size() - 1);
+            num2 = numstack.remove(numstack.size() - 1);
+            quadList.gen(quadNum, op, num2, num1, 'N', -1, "T" + firstIndex);
+            numstack.add("T" + firstIndex);
+            firstIndex++;
+
+        }
+        index--;
+        B1.firstIndex = firstIndex;
+        B1.PLACE = numstack.remove(numstack.size() - 1);
+        return B1;
+    }
+
+    //whileè¯­å¥
+    Attribute X() {
+        Attribute X = new Attribute();
+        Attribute E = new Attribute();
+        Attribute S = new Attribute();
+        M M1 = new M();
+        M M2 = new M();
+        if (rs.get(index).getValue().equalsIgnoreCase("while")) {
+            index++;
+            //if(rs.get(index).getValue().equalsIgnoreCase("("))
+            {
+                //index++;
+                M1.quad = quadNum;
+                E = this.J();
+
+                //if(rs.get(index).getValue().equalsIgnoreCase(")"))
+                {
+                    M2.quad = quadNum;
+                    S = this.Y();
+                    quadList.backPatch(S.nextList, M1.quad);
+                    quadList.gen(quadNum, "J", "0", "0", 'Y', M1.quad, null);
+                    quadList.backPatch(E.falseList, quadNum);
+                    quadList.backPatch(E.trueList, M2.quad);
+
+                    X.nextList = E.falseList;
+                }
+                //this.K();
+            }
+        }
+        //this.Y();
+        return X;
+    }
+
+    //å¸ƒå°”è¯­å¥
+    Attribute J() {
+        Attribute E1 = new Attribute();
+        Attribute E2 = new Attribute();
+        Attribute J1 = new Attribute();
+        M M1 = new M();
+
+        E1 = E();
+
+        if (rs.get(index).getValue().equalsIgnoreCase("&&")) {
+            index++;
+            M1.quad = quadNum;
+            E2 = E();
+            quadList.backPatch(E1.trueList, M1.quad);
+            J1.trueList = E2.trueList;
+            //System.out.println(E1.trueList+"  "+ E2.trueList);
+            //quadList.print();
+            J1.falseList = quadList.merge(E1.falseList, E2.falseList);
+        } else if (rs.get(index).getValue().equalsIgnoreCase("||"))//or
+        {
+            index++;
+            M1.quad = quadNum;
+            E2 = E();
+            quadList.backPatch(E1.falseList, M1.quad);
+            J1.falseList = E2.falseList;
+            J1.trueList = quadList.merge(E1.trueList, E2.trueList);
+        } else {
+            J1.trueList = E1.trueList;
+            J1.falseList = E1.falseList;
+        }
+        while (rs.get(index).getValue().equalsIgnoreCase("&&") || rs.get(index).getValue().equalsIgnoreCase("||")) {
+            if (rs.get(index).getValue().equalsIgnoreCase("&&")) {
+                index++;
+                M1.quad = quadNum;
+                E1 = J1;
+                E2 = E();
+                quadList.backPatch(E1.trueList, M1.quad);
+                J1.trueList = E2.trueList;
+                //System.out.println(E1.trueList+"  "+ E2.trueList);
+                //quadList.print();
+                J1.falseList = quadList.merge(E1.falseList, E2.falseList);
+            } else if (rs.get(index).getValue().equalsIgnoreCase("||"))//or
+            {
+                index++;
+                M1.quad = quadNum;
+                E1 = J1;
+                E2 = E();
+                quadList.backPatch(E1.falseList, M1.quad);
+                J1.falseList = E2.falseList;
+                J1.trueList = quadList.merge(E1.trueList, E2.trueList);
+            }
+
+        }
 		/*while(rs.get(index).getValue().equalsIgnoreCase("and")||rs.get(index).getValue().equalsIgnoreCase("or"))
 		{
 			if(rs.get(index).getValue().equalsIgnoreCase("and"))
@@ -618,138 +566,113 @@ public class Syntax implements AddQuadListener {
 				J1.falseList =E2.falseList;
 				J1.trueList =quadList.merge(E1.trueList,E2.trueList);
 			}
-			
+
 		}*/
-		J1.PLACE = E1.PLACE;
-		return J1;
-		
-	}
-	
-	//±È½ÏÓï¾ä
-	Attribute E()
-	{
-		Attribute B1 = new Attribute();
-		Attribute B2 =new Attribute();
-		Attribute E1 =new Attribute();
-		B1.PLACE = this.B().PLACE;
-		//while(rs.get(index).getValue().equalsIgnoreCase("=")||rs.get(index).getValue().equalsIgnoreCase(">")||rs.get(index).getValue().equalsIgnoreCase("<")||rs.get(index).getValue().equalsIgnoreCase(">=")||rs.get(index).getValue().equalsIgnoreCase("<="))
-		//{
-			if(rs.get(index).getValue().equalsIgnoreCase("=="))
-			{
-				index++;
-				B2.PLACE = this.B().PLACE;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "Jz",B1.PLACE,B2.PLACE , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase(">"))
-			{
-				index++;
-				B2.PLACE = this.B().PLACE;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "J>",B1.PLACE,B2.PLACE , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);			
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase("<"))
-			{
-				index++;
-				B2.PLACE = this.B().PLACE;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "J<",B1.PLACE,B2.PLACE , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);			
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase(">="))
-			{
-				index++;
-				B2.PLACE = this.B().PLACE;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "J>=",B1.PLACE,B2.PLACE , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);			
-			}
-			else if(rs.get(index).getValue().equalsIgnoreCase("<="))
-			{
-				index++;
-				B2.PLACE = this.B().PLACE;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "J<=",B1.PLACE,B2.PLACE , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);			
-			}
-			
-			else//is itself
-			{
-				//index++;
-				E1.trueList =quadNum;
-				quadList.gen(quadNum, "Jnz",B1.PLACE,"0" , 'Y', 0,null);
-				E1.falseList =quadNum;
-				quadList.gen(quadNum, "J", "0", "0", 'Y', 0,null);			
-			}
-	
-		//}
+        J1.PLACE = E1.PLACE;
+        return J1;
 
-		return E1;
-	}
-	Attribute K()//L
-	{
-		Attribute K1=new Attribute();
-		Attribute Y1=new Attribute();
-		Y1=this.Y();
-		K1=this.KA(Y1);
-		
-	
-		return K1;
-		
-	}
-	
-	Attribute KA(Attribute Y1)//L'
-	{
-		M M1 = new M();
-		Attribute KA = new Attribute();
-		Attribute Y = new Attribute();
-		
-		KA.nextList=0;
-		if(rs.get(index).getValue().equalsIgnoreCase(";"))
-		{
-			
-			index++;
-			
-			M1.quad = quadNum;
-			quadList.backPatch(Y1.nextList, M1.quad);
-		    Y=this.Y();
-			KA=this.KA(Y);
-		}
+    }
 
-		else
-		{
-			KA.copy(Y);
-		}
-		return KA;
-	
-	}
-	
-	
-	//******************************************************
-	private boolean isBiaoOP(ParseElement pe){
-		if(pe.getType().equalsIgnoreCase("variable")||pe.getType().equalsIgnoreCase("num")||pe.getValue().equalsIgnoreCase("+")||pe.getValue().equalsIgnoreCase("-")||pe.getValue().equalsIgnoreCase("*")||pe.getValue().equalsIgnoreCase("/")||pe.getValue().equalsIgnoreCase("(")||pe.getValue().equalsIgnoreCase(")"))
-		return true;
-		return false;
-		
-		
-	}
-	public static void main(String args[]) throws Exception
-	{
-		Syntax s = new Syntax();
-		s.WordAnalysis();
-	//	s.word.TestArray();
-		s.P();
-		s.quadList.print();
-}
-	public void addQuad() {
-		// TODO Auto-generated method stub
-		quadNum++;
-	}
+    //æ¯”è¾ƒè¯­å¥
+    Attribute E() {
+        Attribute B1 = new Attribute();
+        Attribute B2 = new Attribute();
+        Attribute E1 = new Attribute();
+        B1.PLACE = this.B().PLACE;
+        //while(rs.get(index).getValue().equalsIgnoreCase("=")||rs.get(index).getValue().equalsIgnoreCase(">")||rs.get(index).getValue().equalsIgnoreCase("<")||rs.get(index).getValue().equalsIgnoreCase(">=")||rs.get(index).getValue().equalsIgnoreCase("<="))
+        //{
+        if (rs.get(index).getValue().equalsIgnoreCase("==")) {
+            index++;
+            B2.PLACE = this.B().PLACE;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "Jz", B1.PLACE, B2.PLACE, 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        } else if (rs.get(index).getValue().equalsIgnoreCase(">")) {
+            index++;
+            B2.PLACE = this.B().PLACE;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "J>", B1.PLACE, B2.PLACE, 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        } else if (rs.get(index).getValue().equalsIgnoreCase("<")) {
+            index++;
+            B2.PLACE = this.B().PLACE;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "J<", B1.PLACE, B2.PLACE, 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        } else if (rs.get(index).getValue().equalsIgnoreCase(">=")) {
+            index++;
+            B2.PLACE = this.B().PLACE;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "J>=", B1.PLACE, B2.PLACE, 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        } else if (rs.get(index).getValue().equalsIgnoreCase("<=")) {
+            index++;
+            B2.PLACE = this.B().PLACE;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "J<=", B1.PLACE, B2.PLACE, 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        } else//is itself
+        {
+            //index++;
+            E1.trueList = quadNum;
+            quadList.gen(quadNum, "Jnz", B1.PLACE, "0", 'Y', 0, null);
+            E1.falseList = quadNum;
+            quadList.gen(quadNum, "J", "0", "0", 'Y', 0, null);
+        }
+
+        //}
+
+        return E1;
+    }
+
+    Attribute K()//L
+    {
+        Attribute K1 = new Attribute();
+        Attribute Y1 = new Attribute();
+        Y1 = this.Y();
+        K1 = this.KA(Y1);
+
+
+        return K1;
+
+    }
+
+    Attribute KA(Attribute Y1)//L'
+    {
+        M M1 = new M();
+        Attribute KA = new Attribute();
+        Attribute Y = new Attribute();
+
+        KA.nextList = 0;
+        if (rs.get(index).getValue().equalsIgnoreCase(";")) {
+
+            index++;
+
+            M1.quad = quadNum;
+            quadList.backPatch(Y1.nextList, M1.quad);
+            Y = this.Y();
+            KA = this.KA(Y);
+        } else {
+            KA.copy(Y);
+        }
+        return KA;
+
+    }
+
+    //******************************************************
+    private boolean isOpOrNum(ParseElement pe) {
+        return pe.getType().equalsIgnoreCase("variable") || pe.getType().equalsIgnoreCase("num") || pe.getValue().equalsIgnoreCase("+") || pe.getValue().equalsIgnoreCase("-") || pe.getValue().equalsIgnoreCase("*") || pe.getValue().equalsIgnoreCase("/") || pe.getValue().equalsIgnoreCase("(") || pe.getValue().equalsIgnoreCase(")");
+
+
+    }
+
+    public void addQuad() {
+        // TODO Auto-generated method stub
+        quadNum++;
+    }
 }

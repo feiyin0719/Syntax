@@ -1,5 +1,5 @@
 package syntax;
 
 public class M {
-	int quad;
+    int quad;
 }

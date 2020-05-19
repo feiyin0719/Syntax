@@ -1,201 +1,196 @@
 package window;
-import java.awt.Color;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.*;
+import java.awt.*;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.swing.JTextPane;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-
 public class SyntaxHighlighter implements DocumentListener {
-	private Set<String> keywords;
-	private Style keywordStyle;
-	private Style normalStyle;
+    private Set<String> keywords;
+    private Style keywordStyle;
+    private Style normalStyle;
     private WeakReference<JTextPane> ew;
-	public SyntaxHighlighter(JTextPane editor) {
-		// ×¼±¸×ÅÉ«Ê¹ÓÃµÄÑùÊ½
-		keywordStyle = ((StyledDocument) editor.getDocument()).addStyle("Keyword_Style", null);
-		normalStyle = ((StyledDocument) editor.getDocument()).addStyle("Keyword_Style", null);
-		StyleConstants.setForeground(keywordStyle, Color.blue);
-		StyleConstants.setFontSize(keywordStyle, 20);
-		StyleConstants.setForeground(normalStyle, Color.BLACK);
+
+    public SyntaxHighlighter(JTextPane editor) {
+        // å‡†å¤‡ç€è‰²ä½¿ç”¨çš„æ ·å¼
+        keywordStyle = ((StyledDocument) editor.getDocument()).addStyle("Keyword_Style", null);
+        normalStyle = ((StyledDocument) editor.getDocument()).addStyle("Keyword_Style", null);
+        StyleConstants.setForeground(keywordStyle, Color.blue);
+        StyleConstants.setFontSize(keywordStyle, 20);
+        StyleConstants.setForeground(normalStyle, Color.BLACK);
         StyleConstants.setFontSize(normalStyle, 20);
-		// ×¼±¸¹Ø¼ü×Ö
-		keywords = new HashSet<String>();
-		keywords.add("if");
-		keywords.add("else");
-		keywords.add("while");
-		keywords.add("int");
-		keywords.add("float");
-		keywords.add("main");
-		keywords.add("bool");
-		keywords.add("void");
-		keywords.add("return");
-		ew=new WeakReference<JTextPane>(editor);
-	}
+        // å‡†å¤‡å…³é”®å­—
+        keywords = new HashSet<String>();
+        keywords.add("if");
+        keywords.add("else");
+        keywords.add("while");
+        keywords.add("int");
+        keywords.add("float");
+        keywords.add("main");
+        keywords.add("bool");
+        keywords.add("void");
+        keywords.add("return");
+        ew = new WeakReference<JTextPane>(editor);
+    }
 
-	public void colouring(StyledDocument doc, int pos, int len) throws BadLocationException {
-		// È¡µÃ²åÈë»òÕßÉ¾³ıºóÓ°Ïìµ½µÄµ¥´Ê.
-		// ÀıÈç"public"ÔÚbºó²åÈëÒ»¸ö¿Õ¸ñ, ¾Í±ä³ÉÁË:"pub lic", ÕâÊ±¾ÍÓĞÁ½¸öµ¥´ÊÒª´¦Àí:"pub"ºÍ"lic"
-		// ÕâÊ±ÒªÈ¡µÃµÄ·¶Î§ÊÇpubÖĞpÇ°ÃæµÄÎ»ÖÃºÍlicÖĞcºóÃæµÄÎ»ÖÃ
-		int start = indexOfWordStart(doc, pos);
-		int end = indexOfWordEnd(doc, pos + len);
+    public void colouring(StyledDocument doc, int pos, int len) throws BadLocationException {
+        // å–å¾—æ’å…¥æˆ–è€…åˆ é™¤åå½±å“åˆ°çš„å•è¯.
+        // ä¾‹å¦‚"public"åœ¨båæ’å…¥ä¸€ä¸ªç©ºæ ¼, å°±å˜æˆäº†:"pub lic", è¿™æ—¶å°±æœ‰ä¸¤ä¸ªå•è¯è¦å¤„ç†:"pub"å’Œ"lic"
+        // è¿™æ—¶è¦å–å¾—çš„èŒƒå›´æ˜¯pubä¸­på‰é¢çš„ä½ç½®å’Œlicä¸­cåé¢çš„ä½ç½®
+        int start = indexOfWordStart(doc, pos);
+        int end = indexOfWordEnd(doc, pos + len);
 
-		char ch;
-		while (start < end) {
-			ch = getCharAt(doc, start);
-			if (Character.isLetter(ch) || ch == '_') {
-				// Èç¹ûÊÇÒÔ×ÖÄ¸»òÕßÏÂ»®Ïß¿ªÍ·, ËµÃ÷ÊÇµ¥´Ê
-				// posÎª´¦ÀíºóµÄ×îºóÒ»¸öÏÂ±ê
-				start = colouringWord(doc, start);
-			} else {
-				SwingUtilities.invokeLater(new ColouringTask(doc, start, 1, normalStyle));
-				++start;
-			}
-		}
-	}
+        char ch;
+        while (start < end) {
+            ch = getCharAt(doc, start);
+            if (Character.isLetter(ch) || ch == '_') {
+                // å¦‚æœæ˜¯ä»¥å­—æ¯æˆ–è€…ä¸‹åˆ’çº¿å¼€å¤´, è¯´æ˜æ˜¯å•è¯
+                // posä¸ºå¤„ç†åçš„æœ€åä¸€ä¸ªä¸‹æ ‡
+                start = colouringWord(doc, start);
+            } else {
+                SwingUtilities.invokeLater(new ColouringTask(doc, start, 1, normalStyle));
+                ++start;
+            }
+        }
+    }
 
-	/**
-	 * ¶Ôµ¥´Ê½øĞĞ×ÅÉ«, ²¢·µ»Øµ¥´Ê½áÊøµÄÏÂ±ê.
-	 * 
-	 * @param doc
-	 * @param pos
-	 * @return
-	 * @throws BadLocationException
-	 */
-	public int colouringWord(StyledDocument doc, int pos) throws BadLocationException {
-		int wordEnd = indexOfWordEnd(doc, pos);
-		String word = doc.getText(pos, wordEnd - pos);
+    /**
+     * å¯¹å•è¯è¿›è¡Œç€è‰², å¹¶è¿”å›å•è¯ç»“æŸçš„ä¸‹æ ‡.
+     *
+     * @param doc
+     * @param pos
+     * @return
+     * @throws BadLocationException
+     */
+    public int colouringWord(StyledDocument doc, int pos) throws BadLocationException {
+        int wordEnd = indexOfWordEnd(doc, pos);
+        String word = doc.getText(pos, wordEnd - pos);
 
-		if (keywords.contains(word)) {
-			// Èç¹ûÊÇ¹Ø¼ü×Ö, ¾Í½øĞĞ¹Ø¼ü×ÖµÄ×ÅÉ«, ·ñÔòÊ¹ÓÃÆÕÍ¨µÄ×ÅÉ«.
-			// ÕâÀïÓĞÒ»µãÒª×¢Òâ, ÔÚinsertUpdateºÍremoveUpdateµÄ·½·¨µ÷ÓÃµÄ¹ı³ÌÖĞ, ²»ÄÜĞŞ¸ÄdocµÄÊôĞÔ.
-			// µ«ÎÒÃÇÓÖÒª´ïµ½ÄÜ¹»ĞŞ¸ÄdocµÄÊôĞÔ, ËùÒÔ°Ñ´ËÈÎÎñ·Åµ½Õâ¸ö·½·¨µÄÍâÃæÈ¥Ö´ĞĞ.
-			// ÊµÏÖÕâÒ»Ä¿µÄ, ¿ÉÒÔÊ¹ÓÃĞÂÏß³Ì, µ«·Åµ½swingµÄÊÂ¼ş¶ÓÁĞÀïÈ¥´¦Àí¸üÇá±ãÒ»µã.
-			SwingUtilities.invokeLater(new ColouringTask(doc, pos, wordEnd - pos, keywordStyle));
-		} else {
-			SwingUtilities.invokeLater(new ColouringTask(doc, pos, wordEnd - pos, normalStyle));
-		}
+        if (keywords.contains(word)) {
+            // å¦‚æœæ˜¯å…³é”®å­—, å°±è¿›è¡Œå…³é”®å­—çš„ç€è‰², å¦åˆ™ä½¿ç”¨æ™®é€šçš„ç€è‰².
+            // è¿™é‡Œæœ‰ä¸€ç‚¹è¦æ³¨æ„, åœ¨insertUpdateå’ŒremoveUpdateçš„æ–¹æ³•è°ƒç”¨çš„è¿‡ç¨‹ä¸­, ä¸èƒ½ä¿®æ”¹docçš„å±æ€§.
+            // ä½†æˆ‘ä»¬åˆè¦è¾¾åˆ°èƒ½å¤Ÿä¿®æ”¹docçš„å±æ€§, æ‰€ä»¥æŠŠæ­¤ä»»åŠ¡æ”¾åˆ°è¿™ä¸ªæ–¹æ³•çš„å¤–é¢å»æ‰§è¡Œ.
+            // å®ç°è¿™ä¸€ç›®çš„, å¯ä»¥ä½¿ç”¨æ–°çº¿ç¨‹, ä½†æ”¾åˆ°swingçš„äº‹ä»¶é˜Ÿåˆ—é‡Œå»å¤„ç†æ›´è½»ä¾¿ä¸€ç‚¹.
+            SwingUtilities.invokeLater(new ColouringTask(doc, pos, wordEnd - pos, keywordStyle));
+        } else {
+            SwingUtilities.invokeLater(new ColouringTask(doc, pos, wordEnd - pos, normalStyle));
+        }
 
-		return wordEnd;
-	}
+        return wordEnd;
+    }
 
-	/**
-	 * È¡µÃÔÚÎÄµµÖĞÏÂ±êÔÚpos´¦µÄ×Ö·û.
-	 * 
-	 * Èç¹ûposÎªdoc.getLength(), ·µ»ØµÄÊÇÒ»¸öÎÄµµµÄ½áÊø·û, ²»»áÅ×³öÒì³£. Èç¹ûpos<0, Ôò»áÅ×³öÒì³£.
-	 * ËùÒÔposµÄÓĞĞ§ÖµÊÇ[0, doc.getLength()]
-	 * 
-	 * @param doc
-	 * @param pos
-	 * @return
-	 * @throws BadLocationException
-	 */
-	public char getCharAt(Document doc, int pos) throws BadLocationException {
-		return doc.getText(pos, 1).charAt(0);
-	}
+    /**
+     * å–å¾—åœ¨æ–‡æ¡£ä¸­ä¸‹æ ‡åœ¨poså¤„çš„å­—ç¬¦.
+     * <p>
+     * å¦‚æœposä¸ºdoc.getLength(), è¿”å›çš„æ˜¯ä¸€ä¸ªæ–‡æ¡£çš„ç»“æŸç¬¦, ä¸ä¼šæŠ›å‡ºå¼‚å¸¸. å¦‚æœpos<0, åˆ™ä¼šæŠ›å‡ºå¼‚å¸¸.
+     * æ‰€ä»¥posçš„æœ‰æ•ˆå€¼æ˜¯[0, doc.getLength()]
+     *
+     * @param doc
+     * @param pos
+     * @return
+     * @throws BadLocationException
+     */
+    public char getCharAt(Document doc, int pos) throws BadLocationException {
+        return doc.getText(pos, 1).charAt(0);
+    }
 
-	/**
-	 * È¡µÃÏÂ±êÎªposÊ±, ËüËùÔÚµÄµ¥´Ê¿ªÊ¼µÄÏÂ±ê. ?¡Àwor^d?¡À (^±íÊ¾pos, ?¡À±íÊ¾¿ªÊ¼»ò½áÊøµÄÏÂ±ê)
-	 * 
-	 * @param doc
-	 * @param pos
-	 * @return
-	 * @throws BadLocationException
-	 */
-	public int indexOfWordStart(Document doc, int pos) throws BadLocationException {
-		// ´Ópos¿ªÊ¼ÏòÇ°ÕÒµ½µÚÒ»¸ö·Çµ¥´Ê×Ö·û.
-		for (; pos > 0 && isWordCharacter(doc, pos - 1); --pos);
+    /**
+     * å–å¾—ä¸‹æ ‡ä¸ºposæ—¶, å®ƒæ‰€åœ¨çš„å•è¯å¼€å§‹çš„ä¸‹æ ‡. ?Â±wor^d?Â± (^è¡¨ç¤ºpos, ?Â±è¡¨ç¤ºå¼€å§‹æˆ–ç»“æŸçš„ä¸‹æ ‡)
+     *
+     * @param doc
+     * @param pos
+     * @return
+     * @throws BadLocationException
+     */
+    public int indexOfWordStart(Document doc, int pos) throws BadLocationException {
+        // ä»poså¼€å§‹å‘å‰æ‰¾åˆ°ç¬¬ä¸€ä¸ªéå•è¯å­—ç¬¦.
+        for (; pos > 0 && isWordCharacter(doc, pos - 1); --pos) ;
 
-		return pos;
-	}
+        return pos;
+    }
 
-	/**
-	 * È¡µÃÏÂ±êÎªposÊ±, ËüËùÔÚµÄµ¥´Ê½áÊøµÄÏÂ±ê. ?¡Àwor^d?¡À (^±íÊ¾pos, ?¡À±íÊ¾¿ªÊ¼»ò½áÊøµÄÏÂ±ê)
-	 * 
-	 * @param doc
-	 * @param pos
-	 * @return
-	 * @throws BadLocationException
-	 */
-	public int indexOfWordEnd(Document doc, int pos) throws BadLocationException {
-		// ´Ópos¿ªÊ¼ÏòÇ°ÕÒµ½µÚÒ»¸ö·Çµ¥´Ê×Ö·û.
-		for (; isWordCharacter(doc, pos); ++pos);
+    /**
+     * å–å¾—ä¸‹æ ‡ä¸ºposæ—¶, å®ƒæ‰€åœ¨çš„å•è¯ç»“æŸçš„ä¸‹æ ‡. ?Â±wor^d?Â± (^è¡¨ç¤ºpos, ?Â±è¡¨ç¤ºå¼€å§‹æˆ–ç»“æŸçš„ä¸‹æ ‡)
+     *
+     * @param doc
+     * @param pos
+     * @return
+     * @throws BadLocationException
+     */
+    public int indexOfWordEnd(Document doc, int pos) throws BadLocationException {
+        // ä»poså¼€å§‹å‘å‰æ‰¾åˆ°ç¬¬ä¸€ä¸ªéå•è¯å­—ç¬¦.
+        for (; isWordCharacter(doc, pos); ++pos) ;
 
-		return pos;
-	}
+        return pos;
+    }
 
-	/**
-	 * Èç¹ûÒ»¸ö×Ö·ûÊÇ×ÖÄ¸, Êı×Ö, ÏÂ»®Ïß, Ôò·µ»Øtrue.
-	 * 
-	 * @param doc
-	 * @param pos
-	 * @return
-	 * @throws BadLocationException
-	 */
-	public boolean isWordCharacter(Document doc, int pos) throws BadLocationException {
-		char ch = getCharAt(doc, pos);
-		if (Character.isLetter(ch) || Character.isDigit(ch) || ch == '_') { return true; }
-		return false;
-	}
-
-
-	public void changedUpdate(DocumentEvent e) {
-		
-	}
-
-	public void insertUpdate(DocumentEvent e) {
-		try {
-		    colouring((StyledDocument) e.getDocument(), e.getOffset(), e.getLength());
-			
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
-		}
+    /**
+     * å¦‚æœä¸€ä¸ªå­—ç¬¦æ˜¯å­—æ¯, æ•°å­—, ä¸‹åˆ’çº¿, åˆ™è¿”å›true.
+     *
+     * @param doc
+     * @param pos
+     * @return
+     * @throws BadLocationException
+     */
+    public boolean isWordCharacter(Document doc, int pos) throws BadLocationException {
+        char ch = getCharAt(doc, pos);
+		return Character.isLetter(ch) || Character.isDigit(ch) || ch == '_';
 	}
 
 
-	public void removeUpdate(DocumentEvent e) {
-		try {
-			// ÒòÎªÉ¾³ıºó¹â±ê½ô½Ó×ÅÓ°ÏìµÄµ¥´ÊÁ½±ß, ËùÒÔ³¤¶È¾Í²»ĞèÒªÁË
-			colouring((StyledDocument) e.getDocument(), e.getOffset(), 0);
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
-		}
-	}
+    public void changedUpdate(DocumentEvent e) {
 
-	/**
-	 * Íê³É×ÅÉ«ÈÎÎñ
-	 * 
-	 * @author Biao
-	 * 
-	 */
-	private class ColouringTask implements Runnable {
-		private StyledDocument doc;
-		private Style style;
-		private int pos;
-		private int len;
+    }
 
-		public ColouringTask(StyledDocument doc, int pos, int len, Style style) {
-			this.doc = doc;
-			this.pos = pos;
-			this.len = len;
-			this.style = style;
-		}
-        
-		public void run() {
-			try {
-				// ÕâÀï¾ÍÊÇ¶Ô×Ö·û½øĞĞ×ÅÉ«
-				doc.setCharacterAttributes(pos, len, style, true);
-			} catch (Exception e) {}
-		}
-	}
-	
-	
+    public void insertUpdate(DocumentEvent e) {
+        try {
+            colouring((StyledDocument) e.getDocument(), e.getOffset(), e.getLength());
+
+        } catch (BadLocationException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+
+    public void removeUpdate(DocumentEvent e) {
+        try {
+            // å› ä¸ºåˆ é™¤åå…‰æ ‡ç´§æ¥ç€å½±å“çš„å•è¯ä¸¤è¾¹, æ‰€ä»¥é•¿åº¦å°±ä¸éœ€è¦äº†
+            colouring((StyledDocument) e.getDocument(), e.getOffset(), 0);
+        } catch (BadLocationException e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * å®Œæˆç€è‰²ä»»åŠ¡
+     *
+     * @author Biao
+     */
+    private class ColouringTask implements Runnable {
+        private StyledDocument doc;
+        private Style style;
+        private int pos;
+        private int len;
+
+        public ColouringTask(StyledDocument doc, int pos, int len, Style style) {
+            this.doc = doc;
+            this.pos = pos;
+            this.len = len;
+            this.style = style;
+        }
+
+        public void run() {
+            try {
+                // è¿™é‡Œå°±æ˜¯å¯¹å­—ç¬¦è¿›è¡Œç€è‰²
+                doc.setCharacterAttributes(pos, len, style, true);
+            } catch (Exception e) {
+            }
+        }
+    }
+
+
 }
